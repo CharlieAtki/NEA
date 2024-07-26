@@ -13,7 +13,7 @@ def password_check(username: str, password: str) -> bool:
 
     try:
         # Checks that the password stored in the database matches the input password
-        cursor.execute("SELECT password FROM users WHERE username = ?", (username,))
+        cursor.execute("SELECT password_hash FROM users WHERE username = ?", (username,))
 
         # Fetches the next row of the result set. If there are no more rows, it returns None.
         result = cursor.fetchone()
@@ -94,8 +94,9 @@ def on_account_creation(username_entry, password_entry):
             )
             ''')
 
-            cursor.execute("INSERT INTO users (username, password, days, stock, reorder_level) VALUES (?, ?, ?, ?, ?)",
-                           (username, password, days, stock, reorder_level))
+            cursor.execute(
+                "INSERT INTO users (username, password_hash, days, stock, reorder_level) VALUES (?, ?, ?, ?, ?)",
+                (username, password, days, stock, reorder_level))
 
             # Commit the changes
             conn.commit()
