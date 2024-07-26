@@ -1,5 +1,6 @@
 import sqlite3
 import tkinter as tk
+import bcrypt
 from tkinter import ttk, messagebox
 
 
@@ -21,9 +22,9 @@ def password_check(username: str, password: str) -> bool:
         # if the row can be found
         if result:
             # assigning the password value
-            stored_password = (result[0])
+            stored_password_hash = (result[0])
             # if the stored password and input password are equal
-            if stored_password == password:
+            if bcrypt.checkpw(password.encode('utf-8'), stored_password_hash.encode('utf-8')):
                 return True
             else:
                 messagebox.showerror("Error", "Password incorrect")
@@ -82,12 +83,14 @@ def on_account_creation(username_entry, password_entry):
             # Create a cursor object to interact with the database
             cursor = conn.cursor()
 
+            password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
             # Create the users table if it doesn't exist
             cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 user_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
-                password TEXT,
+                password_hash TEXT NOT NULL,
                 days INTEGER,
                 stock INTEGER,
                 reorder_level INTEGER               
@@ -96,7 +99,7 @@ def on_account_creation(username_entry, password_entry):
 
             cursor.execute(
                 "INSERT INTO users (username, password_hash, days, stock, reorder_level) VALUES (?, ?, ?, ?, ?)",
-                (username, password, days, stock, reorder_level))
+                (username, password_hash, days, stock, reorder_level))
 
             # Commit the changes
             conn.commit()
