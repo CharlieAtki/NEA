@@ -3,27 +3,27 @@ from tkinter import ttk, messagebox
 from stock_managment import stock_management_dashboard
 
 class SystemHub(tk.Tk):
-    def __init__(self):
+    def __init__(self, username):
         super().__init__()
         self.title = 'Home'
         self.geometry('500x500')
 
         # Initially show the home page
-        self.show_home()
+        self.show_home(username)
 
     def clear_window(self):
         """Clear all widgets in the window."""
         for widget in self.winfo_children():
             widget.destroy()
 
-    def show_home(self):
+    def show_home(self, username):
         self.clear_window()
         # Create a menu bar
         menu_bar = tk.Menu(self)
 
         # create the File menu and add an item
         file_menu = tk.Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label='Stock', command=lambda: stock_management_dashboard(self))
+        file_menu.add_command(label='Stock', command=lambda: stock_management_dashboard(self, username))
         menu_bar.add_cascade(label='Functions', menu=file_menu)
 
         self.config(menu=menu_bar)
@@ -36,15 +36,17 @@ class SystemHub(tk.Tk):
         # home_label = tk.Label(sales_frame, text=username, font=('Arial', 40))
         # home_label.grid(row=0, column=1)
 
-        sale_page_button = ttk.Button(sales_frame, text="Stock Data", command=lambda: stock_management_dashboard(self))
+        sale_page_button = ttk.Button(sales_frame, text="Stock Data", command=lambda: stock_management_dashboard(self, username))
         sale_page_button.grid(row=0, column=2)
 
 
-def SystemHub_runtime():
-    app = SystemHub()
+def SystemHub_runtime(username):
+    app = SystemHub(username)
     app.mainloop()
 
 
 if __name__ == '__main__':
-    app = SystemHub()
+    # The username in this example is for test purposes
+    username = 'root'
+    app = SystemHub(username)
     app.mainloop()

@@ -138,7 +138,7 @@ def on_login(username_entry, password_entry):
     if not data_integrity(username) and password_check(username, password):
         try:
             # load the homepage
-            SystemHub_runtime()
+            SystemHub_runtime(username)
         except Exception as e:
             messagebox.showinfo("Error", f"An Error Occurred: {e}")
     elif data_integrity(username):
