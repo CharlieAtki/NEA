@@ -2,6 +2,7 @@ import sqlite3
 import tkinter as tk
 import bcrypt
 from tkinter import ttk, messagebox
+from erp_hub import SystemHub_runtime
 
 
 def password_check(username: str, password: str) -> bool:
@@ -106,6 +107,7 @@ def on_account_creation(username_entry, password_entry):
             conn.commit()
 
             # Query the database to verify the data was inserted
+            # This is for test purposes - remove later
             cursor.execute("SELECT * FROM users")
             users = cursor.fetchall()
             print("Users:")
@@ -136,7 +138,7 @@ def on_login(username_entry, password_entry):
     if not data_integrity(username) and password_check(username, password):
         try:
             # load the homepage
-            print("Logged in load home page")
+            SystemHub_runtime()
         except Exception as e:
             messagebox.showinfo("Error", f"An Error Occurred: {e}")
     elif data_integrity(username):
