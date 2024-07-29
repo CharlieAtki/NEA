@@ -69,13 +69,10 @@ def data_integrity(username: str) -> bool:
         conn.close()
 
 
-def on_account_creation(username_entry, password_entry):
+def on_account_creation(username_entry, password_entry, reorder_level):
     # All data used within the database
     username: str = username_entry.get().strip()
     password: str = password_entry.get().strip()
-    days: int = 0
-    stock: int = 0
-    reorder_level: int = 0
 
     if data_integrity(username):
         try:
@@ -94,14 +91,12 @@ def on_account_creation(username_entry, password_entry):
                 user_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
                 password_hash TEXT NOT NULL,
-                days INTEGER,
-                stock INTEGER,
-                reorder_level INTEGER               
+                reorder_level INTEGER NOT NULL             
             )
             ''')
 
-            cursor.execute("INSERT INTO users (username, password_hash, days, stock, reorder_level) VALUES (?, ?, ?, ?, ?)",
-                           (username, password_hash, days, stock, reorder_level))
+            cursor.execute("INSERT INTO users (username, password_hash, reorder_level) VALUES (?, ?, ?)",
+                           (username, password_hash, reorder_level))
 
             # Commit the changes
             conn.commit()

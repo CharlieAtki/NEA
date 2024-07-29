@@ -6,7 +6,7 @@ class SystemHub(tk.Tk):
     def __init__(self, username):
         super().__init__()
         self.title = 'Home'
-        self.geometry('500x500')
+        self.geometry('1225x500')
 
         # Initially show the home page
         self.show_home(username)
