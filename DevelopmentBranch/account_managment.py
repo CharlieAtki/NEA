@@ -2,8 +2,6 @@ import sqlite3
 import tkinter as tk
 import bcrypt
 from tkinter import ttk, messagebox
-from erp_hub import SystemHub_runtime
-
 
 def password_check(username: str, password: str) -> bool:
     # pull the password from the database - check it matched the input password
@@ -124,7 +122,7 @@ def on_account_creation(username_entry, password_entry, reorder_level):
         messagebox.showinfo("Username", "Username is already taken")
 
 
-def on_login(username_entry, password_entry):
+def on_login(username_entry, password_entry, self):
     username = username_entry.get()
     password = password_entry.get()
 
@@ -133,31 +131,8 @@ def on_login(username_entry, password_entry):
     if not data_integrity(username) and password_check(username, password):
         try:
             # load the homepage
-            SystemHub_runtime(username)
+            self.show_home(username)
         except Exception as e:
             messagebox.showinfo("Error", f"An Error Occurred: {e}")
     elif data_integrity(username):
         messagebox.showinfo("Error", "That username does not exist")
-
-
-window = tk.Tk()
-window.title('LogIn')
-window.geometry('280x140')
-
-username_label = ttk.Label(window, text='Username')
-username_entry = ttk.Entry(window)
-password_label = ttk.Label(window, text='Password')
-password_entry = ttk.Entry(window, show='*')
-account_creation_button = ttk.Button(window, text='Create Account',
-                                     command=lambda: on_account_creation(username_entry, password_entry))
-login_button = ttk.Button(window, text='LogIn',
-                          command=lambda: on_login(username_entry, password_entry))
-
-username_label.grid(column=0, row=0, padx=5, pady=5)
-username_entry.grid(column=1, row=0, padx=5, pady=5)
-password_label.grid(column=0, row=1, padx=5, pady=5)
-password_entry.grid(column=1, row=1, padx=5, pady=5)
-account_creation_button.grid(column=0, row=2, columnspan=2, padx=5, pady=2, sticky='ew')
-login_button.grid(column=0, row=3, columnspan=2, padx=5, pady=2, sticky='ew')
-
-window.mainloop()

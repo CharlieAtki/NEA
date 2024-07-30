@@ -1,9 +1,8 @@
 import tkinter as tk
 import webbrowser
-from tkinter import ttk, messagebox
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import matplotlib.dates as mdates
+from matplotlib.dates import DateFormatter
 import sqlite3
 import datetime
 
@@ -20,7 +19,7 @@ def on_update_graph_data(stock_entry, reorder_level_entry, username, graph_frame
 
     new_stock_level = stock_entry.get()
     new_reorder_level = reorder_level_entry.get()
-    current_date = datetime.datetime.now().strftime("%d-%m-%y")
+    current_date = datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S")
 
     if new_stock_level.strip() != "":
         # Defining the update statement - Stock history
@@ -50,6 +49,28 @@ def on_update_graph_data(stock_entry, reorder_level_entry, username, graph_frame
 
     load_graph_data(username, graph_frame, reorder_level_entry)
 
+def fetch_stock_records(username: str):
+    conn = sqlite3.connect('erp_system.db')
+
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT date, stock FROM stock_history WHERE username = ?", (username,))
+
+    stock_record = cursor.fetchall()
+
+    conn.close()
+
+    return stock_record
+
+def update_ui_with_stock_records(stock_records, stock_record_frame):
+    # Clear previous records
+    for widget in stock_record_frame.winfo_children():
+        widget.destroy()
+
+    # Creating a label for each line
+    for record in stock_records:
+        record_label = tk.Label(stock_record_frame, text=f"Date: {record[0]}, Stock: {record[1]}", font=("Helvetica", 10))
+        record_label.pack()
 
 def load_graph_data(username: str, graph_frame, reorder_level_entry):
     # Connect to the SQLite database
@@ -69,9 +90,11 @@ def load_graph_data(username: str, graph_frame, reorder_level_entry):
     # Close the connection
     conn.close()
 
+    # Sort stock data by date
+    stock_data.sort(key=lambda x: datetime.datetime.strptime(x[0], "%d-%m-%y %H:%M:%S"))
+
     # Prepare data for the graph
-    # MAKE SURE I UNDERSTAND THIS FUNCTION
-    dates = [datetime.datetime.strptime(row[0], "%d-%m-%y") for row in stock_data]
+    dates = [row[0] for row in stock_data]
     stock_values = [row[1] for row in stock_data]
 
     # Insert the reorder level into the entry
@@ -85,20 +108,22 @@ def load_graph_data(username: str, graph_frame, reorder_level_entry):
 def stock_graph_generator(dates: list, stock_values: list, reorder_level: int, graph_frame):
     global current_canvas
 
+    # Convert string dates to datetime objects
+    dates = [datetime.datetime.strptime(date, "%d-%m-%y %H:%M:%S") for date in dates]
+
     # Plots the graph
     fig, ax = plt.subplots()
     ax.plot(dates, stock_values, label="Stock Level")
     ax.axhline(y=reorder_level, color='r', linestyle='--', label='Reorder Level')
 
-    # Format the date on the x-axis
-    ax.xaxis.set_major_locator(mdates.AutoDateLocator())
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%d-%m-%y'))
-    fig.autofmt_xdate()  # Rotate date labels
-
     # Adding the labels
     ax.set_xlabel("Time (Date)")
     ax.set_ylabel("Stock (units)")
     ax.legend()
+
+    # Formatting the date to show hours and minutes
+    ax.xaxis.set_major_formatter(DateFormatter('%d-%m-%y'))
+    fig.autofmt_xdate()  # Rotate date labels
 
     # Clear the old canvas if it exists
     if current_canvas is not None:
@@ -112,7 +137,6 @@ def stock_graph_generator(dates: list, stock_values: list, reorder_level: int, g
     # Every time the graph is generated, the image will be updated
     # This image is used within webDashboard.html - the ERP website.
     plt.savefig('plot.png')
-
 
 def clear_window(self):
     """Clear all widgets in the window."""
@@ -142,30 +166,33 @@ def stock_management_dashboard(self, username):
     record_frame.grid(row=0, column=2, padx=5, pady=5)
 
     # controls ----
+    username_display_label = tk.Label(control_frame, text=f"User: {username}", font="Helvetica 18 bold", fg="darkblue")
+    username_display_label.grid(row=0, column=0, padx=5, pady=50)
+
     # Stock Entry - Data Entry
     stock_entry_label = tk.Label(control_frame, text="Stock Entry")
-    stock_entry_label.grid(row=0, column=0)
+    stock_entry_label.grid(row=1, column=0)
     stock_entry = tk.Entry(control_frame)
-    stock_entry.grid(row=0, column=1, padx=5, pady=5)
+    stock_entry.grid(row=1, column=1, padx=5, pady=5)
 
     # Reorder level Entry - Data Entry
     reorder_entry_label = tk.Label(control_frame, text="Reorder Entry")
-    reorder_entry_label.grid(row=1, column=0)
+    reorder_entry_label.grid(row=2, column=0)
     reorder_level_entry = tk.Entry(control_frame)
-    reorder_level_entry.grid(row=1, column=1, padx=5, pady=5)
+    reorder_level_entry.grid(row=2, column=1, padx=5, pady=5)
 
     # Collects data for graph generation
     submit_button = tk.Button(control_frame, text="Submit",
                               command=lambda: on_update_graph_data(stock_entry, reorder_level_entry, username,
                                                                    graph_frame))
-    submit_button.grid(row=2, column=0, padx=5, pady=5)
+    submit_button.grid(row=3, column=0, padx=5, pady=5)
 
-    button = tk.Button(control_frame, text="Go to Home Page", command=lambda: self.show_home(username))
-    button.grid(row=3, column=0, padx=5, pady=5)
+    back_to_home_page_button = tk.Button(control_frame, text="Go to Home Page", command=lambda: self.show_home(username))
+    back_to_home_page_button.grid(row=4, column=0, padx=5, pady=5)
 
     # Loads up the Webpage
     web_dashboard_button = tk.Button(control_frame, text="Web Dashboard", command=on_web_dashboard)
-    web_dashboard_button.grid(row=4, column=0, padx=5, pady=5)
+    web_dashboard_button.grid(row=5, column=0, padx=5, pady=5)
 
     # graph
     reference_graph = tk.Label(graph_frame, text="Reference Graph")
@@ -175,5 +202,14 @@ def stock_management_dashboard(self, username):
     load_graph_data(username, graph_frame, reorder_level_entry)
 
     # records
-    reference_record = tk.Label(record_frame, text="Reference Record")
-    reference_record.grid(row=0, column=0)
+    stock_record_title_label = tk.Label(record_frame, text="Stock Records:", font=("Helvetica", 20))
+    stock_record_title_label.grid(row=0, column=0)
+
+    stock_record_description_label = tk.Label(record_frame, text="Latest Stock Addition:\nOrganised from bottom to top", font=("Helvetica", 10), fg="darkblue")
+    stock_record_description_label.grid(row=1, column=0)
+
+    stock_record_frame = tk.Frame(record_frame)
+    stock_record_frame.grid(row=2, column=0, padx=5, pady=5)
+
+    stock_records = fetch_stock_records(username)
+    update_ui_with_stock_records(stock_records, stock_record_frame)
