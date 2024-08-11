@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from stock_managment import stock_management_dashboard
 from account_managment import on_account_creation, on_login
+from store_management import store_management_dashboard
 
 class SystemHub(tk.Tk):
     def __init__(self, username):
@@ -37,11 +38,17 @@ class SystemHub(tk.Tk):
         # home_label = tk.Label(sales_frame, text=username, font=('Arial', 40))
         # home_label.grid(row=0, column=1)
 
-        sale_page_button = ttk.Button(controls_frame, text="Stock Data", command=lambda: stock_management_dashboard(self, username))
-        sale_page_button.grid(row=0, column=0, padx=5, pady=5)
+        # Go Stock Page
+        stock_page_button = ttk.Button(controls_frame, text="Stock Data", command=lambda: stock_management_dashboard(self, username))
+        stock_page_button.grid(row=0, column=0, padx=5, pady=5)
 
+        # Store - Used to test stock graph interaction
+        store_page_button = ttk.Button(controls_frame, text="Store", command=lambda: store_management_dashboard(self, username))
+        store_page_button.grid(row=1, column=0, padx=5, pady=5)
+
+        # Return to Login page
         back_to_login_page_button = tk.Button(controls_frame, text="Back to Login", command=lambda: self.login_page(username))
-        back_to_login_page_button.grid(row=1, column=0, padx=5, pady=5)
+        back_to_login_page_button.grid(row=2, column=0, padx=5, pady=5)
 
     def login_page(self, username):
         self.clear_window()
