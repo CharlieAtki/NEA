@@ -10,7 +10,7 @@ current_canvas = None
 
 url = "http://localhost:63342/ERP/DevelopmentBranch/webDashboardStockCentre.html?_ijt=dondhqa48ugujgf1q9kj8te80q&_ij_reload=RELOAD_ON_SAVE"
 
-def on_update_graph_data(stock_entry, reorder_level_entry, username, graph_frame):
+def on_update_graph_data(stock_entry, reorder_level_entry, username, graph_frame, stock_record_frame):
     # Connect to the SQLite database
     conn = sqlite3.connect('erp_system.db')
 
@@ -49,6 +49,10 @@ def on_update_graph_data(stock_entry, reorder_level_entry, username, graph_frame
 
     load_graph_data(username, graph_frame, reorder_level_entry)
 
+    stock_records = fetch_stock_records(username)
+    update_ui_with_stock_records(stock_records, stock_record_frame)
+
+
 def fetch_stock_records(username: str):
     conn = sqlite3.connect('erp_system.db')
 
@@ -58,6 +62,15 @@ def fetch_stock_records(username: str):
 
     stock_record = cursor.fetchall()
 
+    print(f" Total stock records: {len(stock_record)}")
+
+    # Only includes the 12 most recent stock records - stack
+    if len(stock_record) > 12:
+        stock_record = stock_record[(len(stock_record) - 12):]
+    # Else - there is not yet 12 records
+
+    print(f" Stack: total stock records: {len(stock_record)}")
+
     conn.close()
 
     return stock_record
@@ -66,6 +79,9 @@ def update_ui_with_stock_records(stock_records, stock_record_frame):
     # Clear previous records
     for widget in stock_record_frame.winfo_children():
         widget.destroy()
+
+    # Flipping the list - so that the newest record is at the top
+    stock_records.reverse()
 
     # Creating a label for each line
     for record in stock_records:
@@ -86,6 +102,15 @@ def load_graph_data(username: str, graph_frame, reorder_level_entry):
     # Fetch stock history data
     cursor.execute("SELECT date, stock FROM stock_history WHERE username = ?", (username,))
     stock_data = cursor.fetchall()
+
+    print(f" before stack: {len(stock_data)}")
+
+    # Only includes the 12 most recent stock records - stack
+    if len(stock_data) > 12:
+        stock_data = stock_data[(len(stock_data) - 12):]
+    # Else - there is not yet 12 records
+
+    print(f" After stack: {len(stock_data)}")
 
     # Close the connection
     conn.close()
@@ -184,7 +209,7 @@ def stock_management_dashboard(self, username):
     # Collects data for graph generation
     submit_button = tk.Button(control_frame, text="Submit",
                               command=lambda: on_update_graph_data(stock_entry, reorder_level_entry, username,
-                                                                   graph_frame))
+                                                                   graph_frame, stock_record_frame))
     submit_button.grid(row=3, column=0, padx=5, pady=5)
 
     back_to_home_page_button = tk.Button(control_frame, text="Go to Home Page", command=lambda: self.show_home(username))
@@ -205,7 +230,7 @@ def stock_management_dashboard(self, username):
     stock_record_title_label = tk.Label(record_frame, text="Stock Records:", font=("Helvetica", 20))
     stock_record_title_label.grid(row=0, column=0)
 
-    stock_record_description_label = tk.Label(record_frame, text="Latest Stock Addition:\nOrganised from bottom to top", font=("Helvetica", 10), fg="darkblue")
+    stock_record_description_label = tk.Label(record_frame, text="Latest Stock Addition:\nOrganised from Top to Bottom", font=("Helvetica", 10), fg="darkblue")
     stock_record_description_label.grid(row=1, column=0)
 
     stock_record_frame = tk.Frame(record_frame)
