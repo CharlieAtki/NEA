@@ -10,7 +10,7 @@ current_canvas = None
 
 url = "http://localhost:63342/ERP/DevelopmentBranch/webDashboardStockCentre.html?_ijt=dondhqa48ugujgf1q9kj8te80q&_ij_reload=RELOAD_ON_SAVE"
 
-def on_update_graph_data(stock_entry, reorder_level_entry, username, graph_frame, stock_record_frame):
+def on_update_graph_data(stock_entry, reorder_level_entry, username, graph_frame, stock_record_frame, graph_data_range_scale):
     # Connect to the SQLite database
     conn = sqlite3.connect('erp_system.db')
 
@@ -20,6 +20,9 @@ def on_update_graph_data(stock_entry, reorder_level_entry, username, graph_frame
     new_stock_level = stock_entry.get()
     new_reorder_level = reorder_level_entry.get()
     current_date = datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S")
+
+    # The range of data shown on the graph
+    graph_data_range_scale = graph_data_range_scale.get()
 
     if new_stock_level.strip() != "":
         # Defining the update statement - Stock history
@@ -47,7 +50,7 @@ def on_update_graph_data(stock_entry, reorder_level_entry, username, graph_frame
     # Close the connection
     conn.close()
 
-    load_graph_data(username, graph_frame, reorder_level_entry)
+    load_graph_data(username, graph_frame, reorder_level_entry, graph_data_range_scale)
 
     stock_records = fetch_stock_records(username)
     update_ui_with_stock_records(stock_records, stock_record_frame)
@@ -88,7 +91,7 @@ def update_ui_with_stock_records(stock_records, stock_record_frame):
         record_label = tk.Label(stock_record_frame, text=f"Date: {record[0]}, Stock: {record[1]}", font=("Helvetica", 10))
         record_label.pack()
 
-def load_graph_data(username: str, graph_frame, reorder_level_entry):
+def load_graph_data(username: str, graph_frame, reorder_level_entry, graph_data_range_scale):
     # Connect to the SQLite database
     conn = sqlite3.connect('erp_system.db')
 
@@ -106,8 +109,8 @@ def load_graph_data(username: str, graph_frame, reorder_level_entry):
     print(f" before stack: {len(stock_data)}")
 
     # Only includes the 12 most recent stock records - stack
-    if len(stock_data) > 12:
-        stock_data = stock_data[(len(stock_data) - 12):]
+    if len(stock_data) > graph_data_range_scale:
+        stock_data = stock_data[(len(stock_data) - graph_data_range_scale):]
     # Else - there is not yet 12 records
 
     print(f" After stack: {len(stock_data)}")
@@ -206,25 +209,30 @@ def stock_management_dashboard(self, username):
     reorder_level_entry = tk.Entry(control_frame)
     reorder_level_entry.grid(row=2, column=1, padx=5, pady=5)
 
+    graph_data_range_label = tk.Label(control_frame, text="Graph Data Range")
+    graph_data_range_label.grid(row=3, column=0)
+    graph_data_range_scale = tk.Scale(control_frame, from_=12, to=100, orient="horizontal")
+    graph_data_range_scale.grid(row=3, column=1, padx=5, pady=5)
+
     # Collects data for graph generation
     submit_button = tk.Button(control_frame, text="Submit",
                               command=lambda: on_update_graph_data(stock_entry, reorder_level_entry, username,
-                                                                   graph_frame, stock_record_frame))
-    submit_button.grid(row=3, column=0, padx=5, pady=5)
+                                                                   graph_frame, stock_record_frame, graph_data_range_scale))
+    submit_button.grid(row=4, column=0, padx=5, pady=5)
 
     back_to_home_page_button = tk.Button(control_frame, text="Go to Home Page", command=lambda: self.show_home(username))
-    back_to_home_page_button.grid(row=4, column=0, padx=5, pady=5)
+    back_to_home_page_button.grid(row=5, column=0, padx=5, pady=5)
 
     # Loads up the Webpage
     web_dashboard_button = tk.Button(control_frame, text="Web Dashboard", command=on_web_dashboard)
-    web_dashboard_button.grid(row=5, column=0, padx=5, pady=5)
+    web_dashboard_button.grid(row=6, column=0, padx=5, pady=5)
 
     # graph
     reference_graph = tk.Label(graph_frame, text="Reference Graph")
     reference_graph.grid(row=0, column=0)
 
     # Fetches the data from the database
-    load_graph_data(username, graph_frame, reorder_level_entry)
+    load_graph_data(username, graph_frame, reorder_level_entry, graph_data_range_scale=12)
 
     # records
     stock_record_title_label = tk.Label(record_frame, text="Stock Records:", font=("Helvetica", 20))
