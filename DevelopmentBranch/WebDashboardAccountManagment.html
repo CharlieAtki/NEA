@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Account Management</title>
+    <script src="ERP/NEA/DevelopmentBranch/bcrypt.js"></script>
+    <script>
+        async function on_login(event) {
+            event.preventDefault();
+
+            // Fetch the JSON file
+            const response = await fetch('users.json');
+            const users = await response.json();
+
+            // assigning the input values
+            const inputUsername = document.getElementById('username').value;
+            const inputPassword = document.getElementById('password').value;
+
+            // Find the user in the database
+            const dbUsername = users.find(user => user.username === inputUsername);
+
+            // if dbUsername === true
+            if (dbUsername) {
+                // Compare the hashed password with the input password
+                const match = await bcrypt.compare(inputPassword, dbUsername.password);
+                // if match === true
+                if (match) {
+                    console.log(`${inputUsername} is logged in`)
+                } else {
+                    console.log("incorrect password")
+                }
+            } else {
+                console.log(`${inputUsername} does not exist`) }
+        }
+
+
+    </script>
+</head>
+<body>
+    <h3>Please enter your credentials</h3>
+    <form onsubmit="on_login(event)">
+        <label for="username"> Username:</label>
+        <input type="text" id="username" name="username">
+        <label for="password"> Password:</label>
+        <input type="text" id="password" name="password">
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>

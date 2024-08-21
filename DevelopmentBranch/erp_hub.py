@@ -58,7 +58,7 @@ class SystemHub(tk.Tk):
         password_label = ttk.Label(self, text='Password')
         password_entry = ttk.Entry(self, show='*')
         account_creation_button = ttk.Button(self, text='Create Account',
-                                             command=lambda: on_account_creation(username_entry, password_entry))
+                                             command=lambda: on_account_creation(username_entry, password_entry, reorder_level=0))
         login_button = ttk.Button(self, text='LogIn',
                                   command=lambda: on_login(username_entry, password_entry, self))
 

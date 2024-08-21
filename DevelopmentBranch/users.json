@@ -1,0 +1,14 @@
+[
+  {
+    "user_id": 5,
+    "username": "test",
+    "password_hash": "$2b$12$K8UtCo/K7.VgW7K3O/sVcuRKYBY8U931JWzk80ttc9h6NNgE07BX6",
+    "reorder_level": 21
+  },
+  {
+    "user_id": 6,
+    "username": "root",
+    "password_hash": "$2b$12$5tPZ0I3Yad1DpdCNz08lSODDM.AoQgz2P/HsGiZeT0I33CY8FNHVS",
+    "reorder_level": 23
+  }
+]
