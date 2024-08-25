@@ -1,13 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
-const sqlite3 = require('sqlite3');
+const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
 const {join} = require("node:path");
+const path = require('path');
+
 
 const app = express();
 const port = 3000;
 
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -15,51 +18,113 @@ app.use(bodyParser.json());
 // res (response) - what the server responds (Eg code 200).
 // Code 200 means true. Thus, the program will open the next url
 app.post('/login', (req, res) => {
-    const { username, password } = req.body;
+    const { inputUsername, inputPassword } = req.body;
 
-    console.log(`Received login attempt for username: ${username}`);
+    console.log(`Received login attempt for username: ${inputUsername}`);
 
     // getting the absolute path of the ERP system database
     const dbPath = join(__dirname, '../erp_system.db');
 
+    // Creating a connection to the database
     let conn = new sqlite3.Database(dbPath, (err) => {
+        // If there is an error connecting, return the error message
         if (err) {
             console.error('Error opening database:', err.message);
+            // res = response - 500 = the server encountered an unexpected condition that prevented it fulfilling the request.
             return res.status(500).json({ error: 'Database connection error' });
         }
     });
 
-    conn.get("SELECT username, password_hash FROM users WHERE username =?", [username], async (err, user) => {
+    // Retrieving the username and password_hash from the users table where the username matches the provided value (the parameter "username"
+    conn.get("SELECT username, password_hash FROM users WHERE username =?", [inputUsername], async (err, user) => {
+        // If there is an error - return the error message
         if (err) {
             console.error('Error fetching data:', err.message);
+            // res = response - code 500 = the server encountered an unexpected condition that prevented it fulfilling the request.
             return res.status(500).json({ error: 'Error fetching user data' });
         }
 
+        // if user === true
         if (user) {
             try {
-                const match = await bcrypt.compare(password, user.password_hash);
+                // Hashing the input password ("password") and then comparing if they're a match.
+                const match = await bcrypt.compare(inputPassword, user.password_hash);
+                // If they are a match, Output the message
                 if (match) {
-                    console.log(`${username} Has been loggedIn successfully!`);
+                    console.log(`${inputUsername} Has been loggedIn successfully!`);
                     return res.status(200).json({ success: true, message: 'Login successful' });
+                // Of they are not a match, Output the error message
                 } else {
                     return res.status(401).json({ success: false, message: 'Incorrect password' });
                 }
+            // res = response - code 500 = the server encountered an unexpected condition that prevented it fulfilling the request.
             } catch (error) {
                 console.error('Error comparing passwords:', error);
                 return res.status(500).json({ error: 'Error during password comparison' });
             }
+        // If user is not found in the database
         } else {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
     });
 
+    // End the connection
     conn.close((err) => {
+        // If there is an error - return the error message
         if (err) {
             console.error("Error closing database:", err.message);
         }
     });
 });
 
+app.post('/create', async (req, res) => {
+    const { inputUsername, inputPassword } = req.body;
+
+    console.log(`Received account creation attempt for username: ${inputUsername}`)
+
+    const dbPath = join(__dirname, '../erp_system.db');
+
+    let conn = new sqlite3.Database(dbPath, (err) => {
+        if (err) {
+            console.error('Error opening database:', err.message);
+            return res.status(500).json({error: 'Error creating database'});
+        }
+    });
+
+    try {
+        // Hashing the password
+        const password_hash = await bcrypt.hash(inputPassword, 10);
+        // declaring the variable
+        const reorder_level = 0;
+
+        // Inserting the data into the SQLite database - This creates a new account
+        conn.run('INSERT INTO users (username, password_hash, reorder_level) VALUES (?, ?, ?)', [inputUsername, password_hash, reorder_level], (err, result) => {
+            // If there is an error, return the error message
+            if (err) {
+                console.error('Error adding user data:', err.message);
+                return res.status(500).json({error: 'Username already taken'});
+            }
+            // If there is an error, return the error message
+            console.log(`${inputUsername} Has been created successfully!`);
+            return res.status(200).json({ success: true, message: 'Account created successfully' });
+        });
+    // If there is an error, return the error message
+    } catch (error) {
+        console.error('Error hashing password:', error.message);
+        return res.status(500).json({error: 'Error creating database'});
+    }
+
+    // Close the connection with the database
+    conn.close((err) => {
+        // If there is an error, return the error message
+        if (err) {
+            console.error('Error creating database:', err.message);
+        }
+    });
+});
+
+// Starts the server application and have it listen for incoming network requests on a specific port (3000).
+// It also logs a message to the console indicating that the server is running and provides the url where it can be accessed.
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
 });
