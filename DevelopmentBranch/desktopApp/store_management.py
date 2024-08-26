@@ -5,7 +5,7 @@ from tkinter import messagebox
 
 
 def fetch_stock_records(username: str):
-    conn = sqlite3.connect('erp_system.db')
+    conn = sqlite3.connect('../database/erp_system.db')
 
     cursor = conn.cursor()
 
@@ -38,7 +38,7 @@ def on_purchase(username: str, purchase_number_entry: tk.Entry):
         current_date = datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S")
 
         # Connect to the SQLite database
-        conn = sqlite3.connect('erp_system.db')
+        conn = sqlite3.connect('../database/erp_system.db')
         # Create a cursor object to interact with the database
         cursor = conn.cursor()
 

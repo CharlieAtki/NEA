@@ -12,7 +12,7 @@ url = "http://localhost:63342/ERP/DevelopmentBranch/webDashboardStockCentre.html
 
 def on_update_graph_data(stock_entry, reorder_level_entry, username, graph_frame, stock_record_frame, graph_data_range_scale):
     # Connect to the SQLite database
-    conn = sqlite3.connect('erp_system.db')
+    conn = sqlite3.connect('../database/erp_system.db')
 
     # Create a cursor object to interact with the database
     cursor = conn.cursor()
@@ -57,7 +57,7 @@ def on_update_graph_data(stock_entry, reorder_level_entry, username, graph_frame
 
 
 def fetch_stock_records(username: str):
-    conn = sqlite3.connect('erp_system.db')
+    conn = sqlite3.connect('../database/erp_system.db')
 
     cursor = conn.cursor()
 
@@ -93,7 +93,7 @@ def update_ui_with_stock_records(stock_records, stock_record_frame):
 
 def load_graph_data(username: str, graph_frame, reorder_level_entry, graph_data_range_scale):
     # Connect to the SQLite database
-    conn = sqlite3.connect('erp_system.db')
+    conn = sqlite3.connect('../database/erp_system.db')
 
     # Create a cursor object to interact with the database
     cursor = conn.cursor()

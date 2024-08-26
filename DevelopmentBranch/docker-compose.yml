@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - ./database:/app/database  # Mount the database folder to persist data
+    environment:
+      - DATABASE_URL=/app/database/erp_system.db
+    depends_on:
+      - db
+
+  python_gui:
+    build: ./desktopApp
+    volumes:
+      - ./desktopApp:/app
+      - ./database:/app/database
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=/app/database/erp_system.db
+
+  db:
+    image: nouchka/sqlite3
+    volumes:
+      - ./database:/db
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"  # Mapping port 80 of the container to port 80 of the host
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    depends_on:
+      - backend

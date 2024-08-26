@@ -22,8 +22,9 @@ app.post('/login', (req, res) => {
 
     console.log(`Received login attempt for username: ${inputUsername}`);
 
-    // getting the absolute path of the ERP system database
-    const dbPath = join(__dirname, '../erp_system.db');
+    // getting the absolute path of the ERP system database (process.env.DATABASE_URL) makes it dynamic
+    const dbPath = process.env.DATABASE_URL || join(__dirname, '../database/erp_system.db');
+
 
     // Creating a connection to the database
     let conn = new sqlite3.Database(dbPath, (err) => {
@@ -82,7 +83,7 @@ app.post('/create', async (req, res) => {
 
     console.log(`Received account creation attempt for username: ${inputUsername}`)
 
-    const dbPath = join(__dirname, '../erp_system.db');
+    const dbPath = join(__dirname, '../database/erp_system.db');
 
     let conn = new sqlite3.Database(dbPath, (err) => {
         if (err) {

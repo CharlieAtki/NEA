@@ -6,7 +6,7 @@ from tkinter import ttk, messagebox
 def password_check(username: str, password: str) -> bool:
     # pull the password from the database - check it matched the input password
     # Connect to the SQLite database
-    conn = sqlite3.connect('erp_system.db')
+    conn = sqlite3.connect('../database/erp_system.db')
 
     # Create a cursor object to interact with the database
     cursor = conn.cursor()
@@ -40,7 +40,7 @@ def password_check(username: str, password: str) -> bool:
 # This function
 def data_integrity(username: str) -> bool:
     # Connect to the SQLite database
-    conn = sqlite3.connect('erp_system.db')
+    conn = sqlite3.connect('../database/erp_system.db')
 
     # Create a cursor object to interact with the database
     cursor = conn.cursor()
@@ -75,7 +75,7 @@ def on_account_creation(username_entry, password_entry, reorder_level):
     if data_integrity(username):
         try:
             # Connect to the SQLite database
-            conn = sqlite3.connect('erp_system.db')
+            conn = sqlite3.connect('../database/erp_system.db')
             # Create a cursor object to interact with the database
             cursor = conn.cursor()
 
